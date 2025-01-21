@@ -6,19 +6,13 @@ on:
 
 env:
   IMAGE_REGISTRY_URL: ghcr.io
-  ###############################################
-  ### Replace mcristo1844 with GitHub username ###
-  ###############################################
   DOCKER_IMAGE_NAME: mcristo1844-azure-ttt
   AZURE_WEBAPP_NAME: mcristo1844-ttt-app
-  ###############################################
 
 jobs:
   build:
     if: contains(github.event.pull_request.labels.*.name, 'stage')
-
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -85,6 +79,10 @@ jobs:
           login-server: ${{env.IMAGE_REGISTRY_URL}}
           username: ${{ github.actor }}
           password: ${{ secrets.CR_PAT }}
+
+      - name: Ensure Azure web app exists
+        run: |
+          az webapp create --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --plan ${{ secrets.AZURE_APP_PLAN }} --name ${{env.AZURE_WEBAPP_NAME}} --deployment-container-image-name nginx
 
       - name: Deploy web app container
         uses: azure/webapps-deploy@v3
